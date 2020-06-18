@@ -12,25 +12,30 @@
  */
 class Image_Editor_Flip extends Image_Editor_Modifier {
 	/**
-	 * Direction to flip.
+	 * If the image is flipped vertically.
 	 *
-	 * @var string
+	 * @var boolean
 	 */
-	private $direction = 'vertical';
+	private $vertical = false;
+
+	/**
+	 * If the image is flipped horizontally.
+	 *
+	 * @var boolean
+	 */
+	private $horizontal = false;
 
 	/**
 	 * Constructor.
 	 *
 	 * Will populate object properties from the provided arguments.
 	 *
-	 * @param string $direction 'vertical' or 'horizontal'.
+	 * @param boolean $vertical   Whether the image should be flipped vertically.
+	 * @param boolean $horizontal Whether the image should be flipped horizontally.
 	 */
-	public function __construct( $direction ) {
-		$this->direction = 'vertical';
-
-		if ( 'horizontal' === $direction ) {
-			$this->direction = $direction;
-		}
+	public function __construct( $vertical, $horizontal ) {
+		$this->vertical   = $vertical;
+		$this->horizontal = $horizontal;
 	}
 
 	/**
@@ -42,12 +47,12 @@ class Image_Editor_Flip extends Image_Editor_Modifier {
 	 * @return array Updated metadata.
 	 */
 	public function apply_to_meta( $meta ) {
-		if ( $this->is_vertical() ) {
+		if ( $this->vertical ) {
 			$meta['flip_vertical'] = ! $meta['flip_vertical'];
-		} elseif ( $this->is_horizontal() ) {
+		}
+		if ( $this->horizontal ) {
 			$meta['flip_horizontal'] = ! $meta['flip_horizontal'];
 		}
-
 		return $meta;
 	}
 
@@ -60,29 +65,7 @@ class Image_Editor_Flip extends Image_Editor_Modifier {
 	 * @return bool|WP_Error True on success, WP_Error object or false on failure.
 	 */
 	public function apply_to_image( $image ) {
-		return $image->flip( $this->is_vertical(), $this->is_horizontal() );
-	}
-
-	/**
-	 * Checks if the modifier is a vertical flip
-	 *
-	 * @access private
-	 *
-	 * @return boolean true if the modifier is vertical
-	 */
-	private function is_vertical() {
-		return 'vertical' === $this->direction;
-	}
-
-	/**
-	 * Checks if the modifier is a horizontal flip
-	 *
-	 * @access private
-	 *
-	 * @return boolean true if the modifier is horizontal
-	 */
-	private function is_horizontal() {
-		return 'horizontal' === $this->direction;
+		return $image->flip( $this->vertical, $this->horizontal );
 	}
 
 	/**
