@@ -16,14 +16,14 @@ class Image_Editor_Crop extends Image_Editor_Modifier {
 	 *
 	 * @var float
 	 */
-	private $crop_x = 0;
+	private $left = 0;
 
 	/**
 	 * Distance from the top for the crop.
 	 *
 	 * @var float
 	 */
-	private $crop_y = 0;
+	private $top = 0;
 
 	/**
 	 * Width of the crop.
@@ -44,14 +44,14 @@ class Image_Editor_Crop extends Image_Editor_Modifier {
 	 *
 	 * Will populate object properties from the provided arguments.
 	 *
-	 * @param float $crop_x Percentage from the left for the crop.
-	 * @param float $crop_y Percentage from the top for the crop.
+	 * @param float $left   Percentage from the left for the crop.
+	 * @param float $top    Percentage from the top for the crop.
 	 * @param float $width  Percentage width for the crop.
 	 * @param float $height Percentage height for the crop.
 	 */
-	public function __construct( $crop_x, $crop_y, $width, $height ) {
-		$this->crop_x = floatval( $crop_x );
-		$this->crop_y = floatval( $crop_y );
+	public function __construct( $left, $top, $width, $height ) {
+		$this->left   = floatval( $left );
+		$this->top    = floatval( $top );
 		$this->width  = floatval( $width );
 		$this->height = floatval( $height );
 	}
@@ -65,8 +65,8 @@ class Image_Editor_Crop extends Image_Editor_Modifier {
 	 * @return array Updated metadata.
 	 */
 	public function apply_to_meta( $meta ) {
-		$meta['crop_x']      = $this->crop_x;
-		$meta['crop_y']      = $this->crop_y;
+		$meta['crop_left']   = $this->left;
+		$meta['crop_top']    = $this->top;
 		$meta['crop_width']  = $this->width;
 		$meta['crop_height'] = $this->height;
 
@@ -84,12 +84,12 @@ class Image_Editor_Crop extends Image_Editor_Modifier {
 	public function apply_to_image( $image ) {
 		$size = $image->get_size();
 
-		$crop_x = round( ( $size['width'] * $this->crop_x ) / 100.0 );
-		$crop_y = round( ( $size['height'] * $this->crop_y ) / 100.0 );
+		$left   = round( ( $size['width'] * $this->left ) / 100.0 );
+		$top    = round( ( $size['height'] * $this->top ) / 100.0 );
 		$width  = round( ( $size['width'] * $this->width ) / 100.0 );
 		$height = round( ( $size['height'] * $this->height ) / 100.0 );
 
-		return $image->crop( $crop_x, $crop_y, $width, $height );
+		return $image->crop( $left, $top, $width, $height );
 	}
 
 	/**
@@ -102,7 +102,7 @@ class Image_Editor_Crop extends Image_Editor_Modifier {
 	 */
 	public static function get_filename( $meta ) {
 		if ( isset( $meta['crop_width'] ) && $meta['crop_width'] > 0 ) {
-			$target_file = sprintf( 'crop-%d-%d-%d-%d', round( $meta['crop_x'], 2 ), round( $meta['crop_y'], 2 ), round( $meta['crop_width'], 2 ), round( $meta['crop_height'], 2 ) );
+			$target_file = sprintf( 'crop-%d-%d-%d-%d', round( $meta['crop_left'], 2 ), round( $meta['crop_top'], 2 ), round( $meta['crop_width'], 2 ), round( $meta['crop_height'], 2 ) );
 
 			// We need to change the original name to include the crop. This way if it's cropped again we won't clash.
 			$meta['original_name'] = $target_file;
