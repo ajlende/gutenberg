@@ -170,7 +170,7 @@ export default function ImageEditor( {
 		}
 
 		apiFetch( {
-			path: `__experimental/richimage/${ id }/apply`,
+			path: `__experimental/image-editor/${ id }`,
 			headers: {
 				'Content-type': 'application/json',
 			},
