@@ -8,6 +8,11 @@
  */
 
 /**
+ * Image editor modifier abstract class.
+ */
+require_once __DIR__ . '/class-image-editor-modifier.php';
+
+/**
  * Rotate image modifier.
  */
 class Image_Editor_Rotate extends Image_Editor_Modifier {
