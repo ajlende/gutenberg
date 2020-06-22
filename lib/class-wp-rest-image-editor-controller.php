@@ -42,83 +42,6 @@ class WP_REST_Image_Editor_Controller extends WP_REST_Controller {
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			$this->rest_base . '/rotate',
-			array(
-				array(
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => array( $this, 'rotate_image' ),
-					'permission_callback' => array( $this, 'permission_callback' ),
-					'args'                => array(
-						'angle' => array(
-							'description' => __( 'Rotation angle', 'gutenberg' ),
-							'type'        => 'integer',
-							'required'    => true,
-						),
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			$this->rest_base . '/flip',
-			array(
-				array(
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => array( $this, 'flip_image' ),
-					'permission_callback' => array( $this, 'permission_callback' ),
-					'args'                => array(
-						'direction' => array(
-							'description' => __( 'Flip direction', 'gutenberg' ),
-							'type'        => 'string',
-							'enum'        => array( 'vertical', 'horizontal' ),
-							'required'    => true,
-						),
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
-			$this->rest_base . '/crop',
-			array(
-				array(
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => array( $this, 'crop_image' ),
-					'permission_callback' => array( $this, 'permission_callback' ),
-					'args'                => array(
-						'crop_x'      => array(
-							'description' => __( 'Crop offset percentage from left', 'gutenberg' ),
-							'type'        => 'number',
-							'minimum'     => 0,
-							'required'    => true,
-						),
-						'crop_y'      => array(
-							'description' => __( 'Crop offset percentage from top', 'gutenberg' ),
-							'type'        => 'number',
-							'minimum'     => 0,
-							'required'    => true,
-						),
-						'crop_width'  => array(
-							'description' => __( 'Crop width percentage', 'gutenberg' ),
-							'type'        => 'number',
-							'minimum'     => 1,
-							'required'    => true,
-						),
-						'crop_height' => array(
-							'description' => __( 'Crop height percentage', 'gutenberg' ),
-							'type'        => 'number',
-							'minimum'     => 1,
-							'required'    => true,
-						),
-					),
-				),
-			)
-		);
-
-		register_rest_route(
-			$this->namespace,
 			$this->rest_base,
 			array(
 				array(
@@ -196,51 +119,6 @@ class WP_REST_Image_Editor_Controller extends WP_REST_Controller {
 		}
 
 		return true;
-	}
-
-	/**
-	 * Rotates an image.
-	 *
-	 * @since 7.x ?
-	 * @access public
-	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return array|WP_Error If successful image JSON for the modified image, otherwise a WP_Error.
-	 */
-	public function rotate_image( $request ) {
-		$modifier = new Image_Editor_Rotate( $request['angle'] );
-
-		return $this->editor->modify_image( $request['media_id'], array( $modifier ) );
-	}
-
-	/**
-	 * Flips/mirrors an image.
-	 *
-	 * @since 7.x ?
-	 * @access public
-	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return array|WP_Error If successful image JSON for the modified image, otherwise a WP_Error.
-	 */
-	public function flip_image( $request ) {
-		$modifier = new Image_Editor_Flip( 'vertical' === $request['direction'], 'horizontal' === $request['direction'] );
-
-		return $this->editor->modify_image( $request['media_id'], array( $modifier ) );
-	}
-
-	/**
-	 * Crops an image.
-	 *
-	 * @since 7.x ?
-	 * @access public
-	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return array|WP_Error If successful image JSON for the modified image, otherwise a WP_Error.
-	 */
-	public function crop_image( $request ) {
-		$modifier = new Image_Editor_Crop( $request['crop_x'], $request['crop_y'], $request['crop_width'], $request['crop_height'] );
-
-		return $this->editor->modify_image( $request['media_id'], array( $modifier ) );
 	}
 
 	/**
