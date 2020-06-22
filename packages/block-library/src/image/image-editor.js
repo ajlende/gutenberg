@@ -164,13 +164,19 @@ export default function ImageEditor( {
 		setIsProgress( true );
 
 		const attrs = {
-			crop: {
-				left: crop.x,
-				top: crop.y,
-				width: crop.width,
-				height: crop.height,
-			},
-			rotate: { angle: rotation },
+			modifiers: [
+				{
+					modifier: 'crop',
+					left: crop.x,
+					top: crop.y,
+					width: crop.width,
+					height: crop.height,
+				},
+				{
+					modifier: 'rotate',
+					angle: rotation,
+				},
+			],
 		};
 
 		apiFetch( {
