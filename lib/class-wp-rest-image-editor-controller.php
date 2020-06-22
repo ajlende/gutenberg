@@ -50,50 +50,77 @@ class WP_REST_Image_Editor_Controller extends WP_REST_Controller {
 					'permission_callback' => array( $this, 'permission_callback' ),
 					'args'                => array(
 						array(
-							'crop'   => array(
-								'type'       => 'object',
-								'properties' => array(
-									'left'   => array(
-										'type'     => 'integer',
-										'minimum'  => 0,
-										'required' => true,
-									),
-									'top'    => array(
-										'type'     => 'integer',
-										'minimum'  => 0,
-										'required' => true,
-									),
-									'width'  => array(
-										'type'     => 'integer',
-										'minimum'  => 1,
-										'required' => true,
-									),
-									'height' => array(
-										'type'     => 'integer',
-										'minimum'  => 1,
-										'required' => true,
-									),
-								),
-							),
-							'rotate' => array(
-								'type'       => 'object',
-								'properties' => array(
-									'angle' => array(
-										'type'     => 'integer',
-										'required' => true,
-									),
-								),
-							),
-							'flip'   => array(
-								'type'       => 'object',
-								'properties' => array(
-									'horizontal' => array(
-										'type'     => 'boolean',
-										'required' => true,
-									),
-									'vertical'   => array(
-										'type'     => 'boolean',
-										'required' => true,
+							'modifiers' => array(
+								'type'     => 'array',
+								'required' => true,
+								'items'    => array(
+									'anyOf' => array(
+										array(
+											'type'       => 'object',
+											'properties' => array(
+												'modifier' => array(
+													'type' => 'string',
+													'required' => true,
+													'const' => 'crop',
+												),
+												'left'     => array(
+													'type' => 'number',
+													'required' => true,
+													'minimum' => 0,
+													'maximum' => 100,
+												),
+												'top'      => array(
+													'type' => 'number',
+													'required' => true,
+													'minimum' => 0,
+													'maximum' => 100,
+												),
+												'width'    => array(
+													'type' => 'number',
+													'required' => true,
+													'minimum' => 1,
+													'maximum' => 100,
+												),
+												'height'   => array(
+													'type' => 'number',
+													'required' => true,
+													'minimum' => 1,
+													'maximum' => 100,
+												),
+											),
+										),
+										array(
+											'type'       => 'object',
+											'properties' => array(
+												'modifier' => array(
+													'type' => 'string',
+													'required' => true,
+													'const' => 'rotate',
+												),
+												'angle'    => array(
+													'type' => 'integer',
+													'required' => true,
+												),
+											),
+										),
+										array(
+											'type'       => 'object',
+											'properties' => array(
+												'modifier' => array(
+													'type' => 'string',
+													'required' => true,
+													'const' => 'flip',
+												),
+												'horizontal' => array(
+													'type' => 'boolean',
+													'required' => true,
+												),
+												'vertical' => array(
+													'type' => 'boolean',
+													'required' => true,
+												),
+											),
+										),
 									),
 								),
 							),
@@ -132,14 +159,14 @@ class WP_REST_Image_Editor_Controller extends WP_REST_Controller {
 	 */
 	public function apply_edits( $request ) {
 		$modifiers = array();
-		if ( $request['rotate'] ) {
-			$modifiers[] = new Image_Editor_Rotate( $request['rotate']['angle'] );
-		}
-		if ( $request['flip'] ) {
-			$modifiers[] = new Image_Editor_Flip( $request['flip']['vertical'], $request['flip']['horizontal'] );
-		}
-		if ( $request['crop'] ) {
-			$modifiers[] = new Image_Editor_Crop( $request['crop']['left'], $request['crop']['top'], $request['crop']['width'], $request['crop']['height'] );
+		foreach ( $request['modifiers'] as $modifier ) {
+			if ( 'rotate' === $modifier['modifier'] ) {
+				$modifiers[] = new Image_Editor_Rotate( $modifier['angle'] );
+			} elseif ( 'flip' === $modifier['modifier'] ) {
+				$modifiers[] = new Image_Editor_Flip( $modifier['vertical'], $modifier['horizontal'] );
+			} elseif ( 'crop' === $modifier['modifier'] ) {
+				$modifiers[] = new Image_Editor_Crop( $modifier['left'], $modifier['top'], $modifier['width'], $modifier['height'] );
+			}
 		}
 		return $this->editor->modify_image( $request['media_id'], $modifiers );
 	}
