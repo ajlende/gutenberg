@@ -163,11 +163,15 @@ export default function ImageEditor( {
 	function apply() {
 		setIsProgress( true );
 
-		const attrs = crop;
-
-		if ( rotation > 0 ) {
-			attrs.rotation = rotation;
-		}
+		const attrs = {
+			crop: {
+				left: crop.x,
+				top: crop.y,
+				width: crop.width,
+				height: crop.height,
+			},
+			rotate: { angle: rotation },
+		};
 
 		apiFetch( {
 			path: `__experimental/image-editor/${ id }`,
