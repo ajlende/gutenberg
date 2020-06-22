@@ -28,7 +28,7 @@ require_once __DIR__ . '/class-image-editor-crop.php';
  * @since 7.x ?
  */
 class Image_Editor {
-	const META_KEY = 'richimage';
+	const META_KEY = 'image-editor';
 
 	/**
 	 * Constructs an Image_Editor.
