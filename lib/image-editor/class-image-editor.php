@@ -100,12 +100,12 @@ class Image_Editor {
 		$image_path = get_attached_file( $media_id );
 
 		if ( empty( $image_path ) ) {
-			return new WP_Error( 'fileunknown', 'Unable to find original media file' );
+			return new WP_Error( 'rest_cannot_find_attached_file', __( 'Unable to find original media file.', 'gutenberg' ), array( 'status' => 500 ) );
 		}
 
 		$image_editor = wp_get_image_editor( $image_path );
 		if ( ! $image_editor->load() ) {
-			return new WP_Error( 'fileload', 'Unable to load original media file' );
+			return new WP_Error( 'rest_cannot_load_editor', __( 'Unable to load original media file.', 'gutenberg' ), array( 'status' => 500 ) );
 		}
 
 		return array(
@@ -121,10 +121,15 @@ class Image_Editor {
 	 * @return array Image JSON.
 	 */
 	private function get_image_as_json( $id ) {
-		return array(
-			'media_id' => $id,
-			'url'      => wp_get_attachment_image_url( $id, 'original' ),
-		);
+		$path     = '/wp/v2/media/' . $id;
+		$response = rest_do_request( $path );
+
+		if ( ! $response->is_error() ) {
+			$response->set_status( 201 );
+			$response->header( 'Location', rest_url( $path ) );
+		}
+
+		return $response;
 	}
 
 	/**
@@ -173,9 +178,16 @@ class Image_Editor {
 		);
 
 		// Add this as an attachment.
-		$attachment_id = wp_insert_attachment( $attachment_post, $saved['path'], 0 );
-		if ( 0 === $attachment_id ) {
-			return new WP_Error( 'attachment', 'Unable to add image as attachment' );
+		$attachment_id = wp_insert_attachment( $attachment_post, $saved['path'], 0, true );
+
+		if ( is_wp_error( $attachment_id ) ) {
+			if ( 'db_update_error' === $attachment_id->get_error_code() ) {
+				$attachment_id->add_data( array( 'status' => 500 ) );
+			} else {
+				$attachment_id->add_data( array( 'status' => 400 ) );
+			}
+
+			return $attachment_id;
 		}
 
 		// Generate thumbnails.
@@ -222,7 +234,7 @@ class Image_Editor {
 		$media_url       = wp_get_attachment_image_url( $media_id, 'original' );
 
 		if ( ! $attachment_info || ! $media_url ) {
-			return new WP_Error( 'unknown', 'Unable to get meta information for file' );
+			return new WP_Error( 'rest_unknown_attachment', __( 'Unable to get meta information for file.', 'gutenberg' ), array( 'status' => 404 ) );
 		}
 
 		$default_meta = array();

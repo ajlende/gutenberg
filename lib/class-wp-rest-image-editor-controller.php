@@ -155,7 +155,7 @@ class WP_REST_Image_Editor_Controller extends WP_REST_Controller {
 	 * @access public
 	 *
 	 * @param WP_REST_Request $request Full details about the request.
-	 * @return array|WP_Error If successful image JSON for the modified image, otherwise a WP_Error.
+	 * @return WP_REST_Response|WP_Error If successful image JSON for the modified image, otherwise a WP_Error.
 	 */
 	public function apply_edits( $request ) {
 		$modifiers = array();

@@ -181,16 +181,13 @@ export default function ImageEditor( {
 
 		apiFetch( {
 			path: `__experimental/image-editor/${ id }`,
-			headers: {
-				'Content-type': 'application/json',
-			},
 			method: 'POST',
-			body: JSON.stringify( attrs ),
+			data: attrs,
 		} )
 			.then( ( response ) => {
 				setAttributes( {
-					id: response.media_id,
-					url: response.url,
+					id: response.id,
+					url: response.source_url,
 					height: height && width ? width / aspect : undefined,
 				} );
 			} )
