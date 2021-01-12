@@ -7,6 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import CustomDuotoneBar from './custom-duotone-bar';
 import CustomDuotonePicker from './custom-duotone-picker';
 import { getGradientFromCSSColors, getValuesFromHexColors } from './utils';
 
@@ -72,6 +73,7 @@ function DuotonePickerPopover( {
 					</CircularOptionPicker.ButtonAction>
 				}
 			>
+				<CustomDuotoneBar value={ value } onChange={ onChange } />
 				<CustomDuotonePicker
 					colorPalette={ colorPalette }
 					value={ value }

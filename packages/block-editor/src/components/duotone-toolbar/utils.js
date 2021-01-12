@@ -196,6 +196,25 @@ export function getDefaultColors( palette ) {
 		.map( ( { color } ) => color );
 }
 
+export function getHexColorsFromControlPoints( controlPoints ) {
+	return controlPoints.map( ( { color } ) => rgb2hex( color ) );
+}
+
+export function getControlPointsFromValues( values ) {
+	const colors = getColorsFromValues( values );
+	return colors.map( ( color, index ) => ( {
+		color,
+		position: ( index / colors.length ) * 100,
+	} ) );
+}
+
+export function getValuesFromControlPoints( controlPoints ) {
+	// controlPoints should always be sorted by position.
+	return getValuesFromHexColors(
+		controlPoints.map( ( { color } ) => color )
+	);
+}
+
 export function getCustomDuotoneIdFromHexColors( colors ) {
 	return `duotone-filter-custom-${ colors
 		.map( ( hex ) => hex.slice( 1 ).toLowerCase() )

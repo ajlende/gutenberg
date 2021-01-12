@@ -137,28 +137,24 @@ function ControlPoints( {
 			controlPointMoveState.current.significantMoveHappened = true;
 		}
 
-		onChange(
-			updateControlPointPosition( controlPoints, index, relativePosition )
-		);
-	};
-
-	const cleanEventListeners = () => {
-		if (
-			window &&
-			window.removeEventListener &&
-			controlPointMoveState.current &&
-			controlPointMoveState.current.listenersActivated
-		) {
-			window.removeEventListener( 'mousemove', onMouseMove );
-			window.removeEventListener( 'mouseup', cleanEventListeners );
-			onStopControlPointChange();
-			controlPointMoveState.current.listenersActivated = false;
-		}
+		updateControlPointPosition( controlPoints, index, relativePosition );
 	};
 
 	useEffect( () => {
+		if ( window && window.addEventListener ) {
+			window.addEventListener( 'mousemove', onMouseMove );
+			window.addEventListener( 'mouseup', cleanEventListeners );
+		}
 		return () => {
-			cleanEventListeners();
+			if (
+				window &&
+				window.removeEventListener &&
+				controlPointMoveState.current &&
+				controlPointMoveState.current.listenersActivated
+			) {
+				window.removeEventListener( 'mousemove', onMouseMove );
+				window.removeEventListener( 'mouseup', cleanEventListeners );
+			}
 		};
 	}, [] );
 
@@ -174,7 +170,6 @@ function ControlPoints( {
 							key={ index }
 							onClick={ () => {
 								if (
-									controlPointMoveState.current &&
 									controlPointMoveState.current
 										.significantMoveHappened
 								) {
@@ -188,23 +183,17 @@ function ControlPoints( {
 								onToggle();
 							} }
 							onMouseDown={ () => {
-								if ( window && window.addEventListener ) {
-									controlPointMoveState.current = {
-										initialPosition,
-										index,
-										significantMoveHappened: false,
-										listenersActivated: true,
-									};
-									onStartControlPointChange();
-									window.addEventListener(
-										'mousemove',
-										onMouseMove
-									);
-									window.addEventListener(
-										'mouseup',
-										cleanEventListeners
-									);
-								}
+								onStartControlPointChange();
+								controlPointMoveState.current = {
+									initialPosition,
+									index,
+									significantMoveHappened: false,
+									listenersActivated: true,
+								};
+							} }
+							onMouseUp={ () => {
+								onStopControlPointChange();
+								controlPointMoveState.current.listenersActivated = false;
 							} }
 							isOpen={ isOpen }
 							position={ point.position }
