@@ -13,6 +13,11 @@
 	// This block has customizable padding, border-box makes that more predictable.
 	box-sizing: border-box;
 
+	.wp-block-cover__image-background {
+		width: inherit;
+		height: inherit;
+	}
+
 	&.has-parallax {
 		background-attachment: fixed;
 
