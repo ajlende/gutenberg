@@ -71,7 +71,12 @@
 	},
 	"supports": {
 		"anchor": true,
-		"align": true
+		"align": true,
+		"color": {
+			"duotone": "video",
+			"text": false,
+			"background": false
+		}
 	},
 	"editorStyle": "wp-block-video-editor",
 	"style": "wp-block-video"
