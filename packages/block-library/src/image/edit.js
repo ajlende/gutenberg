@@ -90,7 +90,6 @@ export function ImageEdit( {
 		width,
 		height,
 		sizeSlug,
-		duotone,
 	} = attributes;
 	const [ temporaryURL, setTemporaryURL ] = useState();
 
@@ -277,7 +276,6 @@ export function ImageEdit( {
 	);
 
 	const classes = classnames( className, {
-		[ duotone?.id ]: duotone,
 		'is-transient': temporaryURL,
 		'is-resized': !! width || !! height,
 		[ `size-${ sizeSlug }` ]: sizeSlug,
