@@ -6,6 +6,7 @@ import { get, filter, map, last, pick, includes } from 'lodash';
 /**
  * WordPress dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { isBlobURL } from '@wordpress/blob';
 import {
 	ExternalLink,
@@ -99,6 +100,7 @@ export default function Image( {
 		height,
 		linkTarget,
 		sizeSlug,
+		style,
 	},
 	setAttributes,
 	isSelected,
@@ -293,6 +295,48 @@ export default function Image( {
 		);
 	}
 
+	async function saveDuotone() {
+		try {
+			const attrs = {
+				src: url,
+				modifiers: [
+					{
+						type: 'duotone',
+						args: {
+							colors: style.color.duotone,
+						},
+					},
+				],
+			};
+
+			const response = await apiFetch( {
+				path: `/wp/v2/media/${ id }/edit`,
+				method: 'POST',
+				data: attrs,
+			} );
+
+			delete style.color.duotone;
+
+			setAttributes( {
+				id: response.id,
+				url: response.source_url,
+				style,
+			} );
+		} catch ( error ) {
+			createErrorNotice(
+				sprintf(
+					/* translators: 1. Error message */
+					__( 'Could not apply duotone to image. %s' ),
+					error.message
+				),
+				{
+					id: 'image-editing-error',
+					type: 'snackbar',
+				}
+			);
+		}
+	}
+
 	const controls = (
 		<>
 			<BlockControls group="block">
@@ -332,6 +376,11 @@ export default function Image( {
 						label={ __( 'Add text over image' ) }
 						onClick={ switchToCover }
 					/>
+				) }
+				{ style?.color?.duotone && (
+					<ToolbarButton onClick={ saveDuotone }>
+						{ __( 'Apply Duotone' ) }
+					</ToolbarButton>
 				) }
 			</BlockControls>
 			{ ! multiImageSelection && ! isEditingImage && (
