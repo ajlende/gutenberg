@@ -1,4 +1,24 @@
 .wp-block-cover {
+	.wp-component-progress-bar__outer {
+		position: absolute;
+		z-index: 2;
+		top: 24px;
+		left: 50%;
+		transform: translate( -50%, -50% );
+		height: 12px;
+		width: calc( 100% - 24px );
+		border: 1px solid #ddd;
+		margin: 0;
+		background-color: #fff;
+	}
+
+	.wp-component-progress-bar__inner {
+		background-color: #0693e3;
+		width: 0;
+		height: 100%;
+		transition: width 10s linear;
+	}
+
 	// Override default cover styles
 	// because we're not ready yet to show the cover block.
 	&.is-placeholder {
@@ -19,10 +39,10 @@
 	// Shown while media is being uploaded
 	.components-spinner {
 		position: absolute;
-		z-index: z-index(".wp-block-cover__inner-container");
+		z-index: z-index( '.wp-block-cover__inner-container' );
 		top: 50%;
 		left: 50%;
-		transform: translate(-50%, -50%); // Account for spinner dimensions
+		transform: translate( -50%, -50% ); // Account for spinner dimensions
 		margin: 0;
 	}
 
@@ -43,8 +63,8 @@
 	}
 }
 
-[data-align="left"] > .wp-block-cover,
-[data-align="right"] > .wp-block-cover {
+[data-align='left'] > .wp-block-cover,
+[data-align='right'] > .wp-block-cover {
 	max-width: $content-width / 2;
 	width: 100%;
 }
@@ -61,7 +81,7 @@
 	bottom: 0;
 }
 
-.block-library-cover__resize-container:not(.is-resizing) {
+.block-library-cover__resize-container:not( .is-resizing ) {
 	// Important is used to have higher specificity than the inline style set by re-resizable library.
 	height: auto !important;
 }
@@ -70,12 +90,12 @@
 .wp-block-cover > .components-drop-zone {
 	&.is-active {
 		transition: 0.2s opacity, 0.2s border;
-		@include reduce-motion("transition");
+		@include reduce-motion( 'transition' );
 	}
 
 	&.is-dragging-over-element {
 		background-color: transparent;
-		border: $grid-unit-60 solid var(--wp-admin-theme-color);
+		border: $grid-unit-60 solid var( --wp-admin-theme-color );
 
 		.components-drop-zone__content {
 			transform: none;
@@ -85,8 +105,8 @@
 	.components-drop-zone__content {
 		display: flex;
 		align-items: center;
-		top: -($grid-unit-15 * 3);
-		left: -($grid-unit-15 * 3);
+		top: -( $grid-unit-15 * 3 );
+		left: -( $grid-unit-15 * 3 );
 		transform: none;
 	}
 

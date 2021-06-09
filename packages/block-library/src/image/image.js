@@ -315,12 +315,18 @@ export default function Image( {
 				data: attrs,
 			} );
 
+			console.log( 'image', response );
+
 			delete style.color.duotone;
 
 			setAttributes( {
 				id: response.id,
 				url: response.source_url,
 				style,
+			} );
+
+			createSuccessNotice( __( 'Duotone applied.' ), {
+				type: 'snackbar',
 			} );
 		} catch ( error ) {
 			createErrorNotice(

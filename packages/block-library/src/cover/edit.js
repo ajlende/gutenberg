@@ -8,6 +8,7 @@ import tinycolor from 'tinycolor2';
 /**
  * WordPress dependencies
  */
+import apiFetch from '@wordpress/api-fetch';
 import { Fragment, useEffect, useRef, useState } from '@wordpress/element';
 import {
 	BaseControl,
@@ -19,6 +20,7 @@ import {
 	ResizableBox,
 	Spinner,
 	ToggleControl,
+	ToolbarButton,
 	withNotices,
 	__experimentalUseCustomUnits as useCustomUnits,
 	__experimentalBoxControl as BoxControl,
@@ -42,7 +44,7 @@ import {
 	__experimentalBlockFullHeightAligmentControl as FullHeightAlignmentControl,
 	store as blockEditorStore,
 } from '@wordpress/block-editor';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { withDispatch, useSelect } from '@wordpress/data';
 import { cover as icon } from '@wordpress/icons';
 import { isBlobURL } from '@wordpress/blob';
@@ -61,6 +63,17 @@ import {
 	isContentPositionCenter,
 	getPositionClassName,
 } from './shared';
+
+function ProgressBar( { percent } ) {
+	return (
+		<div className="wp-component-progress-bar__outer">
+			<div
+				className="wp-component-progress-bar__inner"
+				style={ { width: `${ percent * 100 }%` } }
+			></div>
+		</div>
+	);
+}
 
 /**
  * Module Constants
@@ -328,6 +341,9 @@ function CoverEdit( {
 	const onSelectMedia = attributesFromMedia( setAttributes );
 	const isUploadingMedia = isTemporaryMedia( id, url );
 
+	const [ isLoading, setIsLoading ] = useState( false );
+	const [ progress, setProgress ] = useState( 0 );
+
 	const [ prevMinHeightValue, setPrevMinHeightValue ] = useState( minHeight );
 	const [ prevMinHeightUnit, setPrevMinHeightUnit ] = useState(
 		minHeightUnit
@@ -373,6 +389,68 @@ function CoverEdit( {
 			isRepeated: ! isRepeated,
 		} );
 	};
+
+	async function saveDuotone() {
+		setIsLoading( true );
+		try {
+			const attrs = {
+				src: url,
+				modifiers: [
+					{
+						type: 'duotone',
+						args: {
+							colors: styleAttribute.color.duotone,
+						},
+					},
+				],
+			};
+
+			const response = await apiFetch( {
+				path: `/wp/v2/media/${ id }/edit`,
+				method: 'POST',
+				data: attrs,
+				parse: false,
+			} );
+			const body = await response.json();
+
+			if ( 202 === response.status ) {
+				setProgress( 0.01 );
+				let complete = false;
+				do {
+					await new Promise( ( resolve ) =>
+						window.setTimeout( resolve, 10000 )
+					);
+					const statusResponse = await apiFetch( {
+						path: `/wp/v2/media/${ body.id }/status`,
+						method: 'GET',
+						parse: false,
+					} );
+					const statusBody = await statusResponse.json();
+					complete = statusBody.complete;
+					setProgress( Math.min( 0.01 + statusBody.time / 31, 1.0 ) );
+				} while ( ! complete );
+				delete styleAttribute.color.duotone;
+				setAttributes( {
+					id: body.id,
+					url: body.source_url,
+					style: styleAttribute,
+				} );
+			}
+		} catch ( error ) {
+			noticeOperations.createErrorNotice(
+				sprintf(
+					/* translators: 1. Error message */
+					__( 'Could not apply duotone to media. %s' ),
+					error.message
+				),
+				{
+					id: 'media-editing-error',
+					type: 'snackbar',
+				}
+			);
+		}
+		setIsLoading( false );
+	}
 
 	const isDarkElement = useRef();
 	const isDark = useCoverIsDark(
@@ -447,6 +525,11 @@ function CoverEdit( {
 					onToggle={ toggleMinFullHeight }
 					isDisabled={ ! hasInnerBlocks }
 				/>
+				{ styleAttribute?.color?.duotone && (
+					<ToolbarButton onClick={ saveDuotone }>
+						{ __( 'Apply Duotone' ) }
+					</ToolbarButton>
+				) }
 			</BlockControls>
 			<BlockControls group="other">
 				<MediaReplaceFlow
@@ -677,6 +760,7 @@ function CoverEdit( {
 					/>
 				) }
 				{ isUploadingMedia && <Spinner /> }
+				{ isLoading && <ProgressBar percent={ progress } /> }
 				<CoverPlaceholder
 					disableMediaButtons
 					noticeUI={ noticeUI }
