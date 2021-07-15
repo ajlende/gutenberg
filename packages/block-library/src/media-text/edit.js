@@ -8,8 +8,8 @@ import { map, filter } from 'lodash';
  * WordPress dependencies
  */
 import { __, _x } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
-import { useState, useRef } from '@wordpress/element';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { useEffect, useState, useRef } from '@wordpress/element';
 import {
 	BlockControls,
 	BlockVerticalAlignmentControl,
@@ -120,7 +120,7 @@ function attributesFromMedia( {
 	};
 }
 
-function MediaTextEdit( { attributes, isSelected, setAttributes } ) {
+function MediaTextEdit( { clientId, attributes, isSelected, setAttributes } ) {
 	const {
 		focalPoint,
 		href,
@@ -138,6 +138,15 @@ function MediaTextEdit( { attributes, isSelected, setAttributes } ) {
 		rel,
 		verticalAlignment,
 	} = attributes;
+
+	// Hide and show duotone controls depending on when it should work.
+	// Currently hidden for video because duotone on controls is not accessible.
+	const isDuotoneAvailable = !! mediaUrl && mediaType === 'image';
+	const { showDuotoneControls } = useDispatch( blockEditorStore );
+	useEffect( () => {
+		showDuotoneControls( clientId, isDuotoneAvailable );
+	}, [ clientId, isDuotoneAvailable ] );
+
 	const mediaSizeSlug = attributes.mediaSizeSlug || DEFAULT_MEDIA_SIZE_SLUG;
 
 	const image = useSelect(
