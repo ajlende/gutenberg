@@ -138,3 +138,11 @@
 .wp-block-image figure {
 	margin: 0;
 }
+
+// Duotone styles
+.wp-block-image {
+	--wp--style--filter: initial;
+	> img {
+		filter: var(--wp--style--filter);
+	}
+}
