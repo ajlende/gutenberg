@@ -89,9 +89,11 @@
 			}
 		},
 		"color": {
-			"__experimentalDuotone": "> .wp-block-cover__image-background, > .wp-block-cover__video-background",
 			"text": false,
 			"background": false
+		},
+		"filter": {
+			"duotone": true
 		},
 		"typography": {
 			"fontSize": true,
