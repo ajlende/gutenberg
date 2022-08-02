@@ -421,30 +421,7 @@ function gutenberg_register_duotone_support( $block_type ) {
 	}
 }
 
-/**
- * Render out the duotone stylesheet and SVG.
- *
- * @param  string $block_content Rendered block content.
- * @param  array  $block         Block object.
- * @return string                Filtered block content.
- */
-function gutenberg_render_duotone_support( $block_content, $block ) {
-	$block_type = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
-
-	$duotone_support = false;
-	if ( $block_type && property_exists( $block_type, 'supports' ) ) {
-		$duotone_support = _wp_array_get( $block_type->supports, array( 'color', '__experimentalDuotone' ), false );
-	}
-
-	$has_duotone_attribute = isset( $block['attrs']['style']['color']['duotone'] );
-
-	if (
-		! $duotone_support ||
-		! $has_duotone_attribute
-	) {
-		return $block_content;
-	}
-
+function gutenberg_render_deprecated_experimental_duotone_support( $block_content, $block ) {
 	$colors          = $block['attrs']['style']['color']['duotone'];
 	$filter_key      = is_array( $colors ) ? implode( '-', $colors ) : $colors;
 	$filter_preset   = array(
@@ -506,6 +483,29 @@ function gutenberg_render_duotone_support( $block_content, $block ) {
 		$block_content,
 		1
 	);
+}
+
+/**
+ * Render out the duotone stylesheet and SVG.
+ *
+ * @param  string $block_content Rendered block content.
+ * @param  array  $block         Block object.
+ * @return string                Filtered block content.
+ */
+function gutenberg_render_duotone_support( $block_content, $block ) {
+	$block_type = WP_Block_Type_Registry::get_instance()->get_registered( $block['blockName'] );
+
+	if (
+		isset( $block['attrs']['style']['color']['duotone'] ) &&
+		$block_type && property_exists( $block_type, 'supports' )
+	) {
+		$deprecated_experimental_duotone_support = _wp_array_get( $block_type->supports, array( 'color', '__experimentalDuotone' ), false );
+		if ( $deprecated_experimental_duotone_support) {
+			return gutenberg_render_deprecated_experimental_duotone_support( $block_content, $block, $deprecated_experimental_duotone_support );
+		}
+	}
+
+	return $block_content;
 }
 
 // Register the block support.
