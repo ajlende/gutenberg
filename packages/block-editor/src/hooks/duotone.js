@@ -199,6 +199,43 @@ function scopeSelector( scope, selector ) {
 	return selectorsScoped.join( ', ' );
 }
 
+function DeprecatedExperimentalDuotoneStyles( {
+	BlockListBlock,
+	deprecatedExperimentalDuotoneSupport,
+	...props
+} ) {
+	const colors = props?.attributes?.style?.color?.duotone;
+
+	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
+
+	// Extra .editor-styles-wrapper specificity is needed in the editor
+	// since we're not using inline styles to apply the filter. We need to
+	// override duotone applied by global styles and theme.json.
+	const selectorsGroup = scopeSelector(
+		`.editor-styles-wrapper .${ id }`,
+		deprecatedExperimentalDuotoneSupport
+	);
+
+	const className = classnames( props?.className, id );
+
+	const element = useContext( BlockList.__unstableElementContext );
+
+	return (
+		<>
+			{ element &&
+				createPortal(
+					<InlineDuotone
+						selector={ selectorsGroup }
+						id={ id }
+						colors={ colors }
+					/>,
+					element
+				) }
+			<BlockListBlock { ...props } className={ className } />
+		</>
+	);
+}
+
 /**
  * Override the default block element to include duotone styles.
  *
@@ -208,44 +245,23 @@ function scopeSelector( scope, selector ) {
  */
 const withDuotoneStyles = createHigherOrderComponent(
 	( BlockListBlock ) => ( props ) => {
-		const duotoneSupport = getBlockSupport(
+		const deprecatedExperimentalDuotoneSupport = getBlockSupport(
 			props.name,
 			'color.__experimentalDuotone'
 		);
-		const colors = props?.attributes?.style?.color?.duotone;
-
-		if ( ! duotoneSupport || ! colors ) {
-			return <BlockListBlock { ...props } />;
+		if ( deprecatedExperimentalDuotoneSupport ) {
+			return (
+				<DeprecatedExperimentalDuotoneStyles
+					BlockListBlock={ BlockListBlock }
+					deprecatedExperimentalDuotoneSupport={
+						deprecatedExperimentalDuotoneSupport
+					}
+					{ ...props }
+				/>
+			);
 		}
 
-		const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
-
-		// Extra .editor-styles-wrapper specificity is needed in the editor
-		// since we're not using inline styles to apply the filter. We need to
-		// override duotone applied by global styles and theme.json.
-		const selectorsGroup = scopeSelector(
-			`.editor-styles-wrapper .${ id }`,
-			duotoneSupport
-		);
-
-		const className = classnames( props?.className, id );
-
-		const element = useContext( BlockList.__unstableElementContext );
-
-		return (
-			<>
-				{ element &&
-					createPortal(
-						<InlineDuotone
-							selector={ selectorsGroup }
-							id={ id }
-							colors={ colors }
-						/>,
-						element
-					) }
-				<BlockListBlock { ...props } className={ className } />
-			</>
-		);
+		return <BlockListBlock { ...props } />;
 	},
 	'withDuotoneStyles'
 );
