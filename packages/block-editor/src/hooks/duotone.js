@@ -12,6 +12,7 @@ import { getBlockSupport, hasBlockSupport } from '@wordpress/blocks';
 import { createHigherOrderComponent, useInstanceId } from '@wordpress/compose';
 import { addFilter } from '@wordpress/hooks';
 import { useMemo, useContext, createPortal } from '@wordpress/element';
+import deprecated from '@wordpress/deprecated';
 
 /**
  * Internal dependencies
@@ -218,6 +219,12 @@ function DeprecatedExperimentalDuotoneStyles( {
 	deprecatedExperimentalDuotoneSupport,
 	...props
 } ) {
+	deprecated( 'color.__experimentalDuotone selector block supports', {
+		since: '6.1',
+		alternative: 'filter.duotone block supports',
+		link: 'TODO',
+	} );
+
 	const colors = props?.attributes?.style?.color?.duotone;
 
 	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
@@ -261,9 +268,7 @@ const withDuotoneStyles = createHigherOrderComponent(
 	( BlockListBlock ) => ( props ) => {
 		const duotoneSupport = getBlockSupport( props.name, 'filter.duotone' );
 		if ( duotoneSupport ) {
-			return (
-				<BlockListBlock { ...props } />
-			);
+			return <BlockListBlock { ...props } />;
 		}
 
 		const deprecatedExperimentalDuotoneSupport = getBlockSupport(
