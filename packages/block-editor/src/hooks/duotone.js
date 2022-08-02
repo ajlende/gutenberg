@@ -183,6 +183,29 @@ const withDuotoneControls = createHigherOrderComponent(
 	'withDuotoneControls'
 );
 
+function DuotoneStyles( { BlockListBlock, ...props } ) {
+	const colors = props?.attributes?.style?.color?.duotone;
+	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
+	const wrapperProps = {
+		...props.wrapperProps,
+		style: {
+			'--wp--style--filter': `url( #${ id } )`,
+			...props.wrapperProps?.style,
+		},
+	};
+	const element = useContext( BlockList.__unstableElementContext );
+	return (
+		<>
+			{ element &&
+				createPortal(
+					<DuotoneFilter id={ id } colors={ colors } />,
+					element
+				) }
+			<BlockListBlock { ...props } wrapperProps={ wrapperProps } />
+		</>
+	);
+}
+
 /**
  * Function that scopes a selector with another one. This works a bit like
  * SCSS nesting except the `&` operator isn't supported.
@@ -268,7 +291,9 @@ const withDuotoneStyles = createHigherOrderComponent(
 	( BlockListBlock ) => ( props ) => {
 		const duotoneSupport = getBlockSupport( props.name, 'filter.duotone' );
 		if ( duotoneSupport ) {
-			return <BlockListBlock { ...props } />;
+			return (
+				<DuotoneStyles BlockListBlock={ BlockListBlock } { ...props } />
+			);
 		}
 
 		const deprecatedExperimentalDuotoneSupport = getBlockSupport(
