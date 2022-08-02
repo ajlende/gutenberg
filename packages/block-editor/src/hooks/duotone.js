@@ -126,13 +126,19 @@ function DuotonePanel( { attributes, setAttributes } ) {
  * @return {Object} Filtered block settings.
  */
 function addDuotoneAttributes( settings ) {
-	if ( ! hasBlockSupport( settings, 'color.__experimentalDuotone' ) ) {
-		return settings;
-	}
+	const hasDuotoneSupport = hasBlockSupport( settings, 'filter.duotone' );
+
+	const hasDeprecatedExperimentalDuotoneSupport = hasBlockSupport(
+		settings,
+		'color.__experimentalDuotone'
+	);
+
+	const shouldAddAttributes =
+		hasDuotoneSupport || hasDeprecatedExperimentalDuotoneSupport;
 
 	// Allow blocks to specify their own attribute definition with default
 	// values if needed.
-	if ( ! settings.attributes.style ) {
+	if ( ! settings.attributes.style && shouldAddAttributes ) {
 		Object.assign( settings.attributes, {
 			style: {
 				type: 'object',
@@ -155,13 +161,21 @@ const withDuotoneControls = createHigherOrderComponent(
 	( BlockEdit ) => ( props ) => {
 		const hasDuotoneSupport = hasBlockSupport(
 			props.name,
+			'filter.duotone'
+		);
+
+		const hasDeprecatedExperimentalDuotoneSupport = hasBlockSupport(
+			props.name,
 			'color.__experimentalDuotone'
 		);
+
+		const shouldShowPanel =
+			hasDuotoneSupport || hasDeprecatedExperimentalDuotoneSupport;
 
 		return (
 			<>
 				<BlockEdit { ...props } />
-				{ hasDuotoneSupport && <DuotonePanel { ...props } /> }
+				{ shouldShowPanel && <DuotonePanel { ...props } /> }
 			</>
 		);
 	},
@@ -245,6 +259,13 @@ function DeprecatedExperimentalDuotoneStyles( {
  */
 const withDuotoneStyles = createHigherOrderComponent(
 	( BlockListBlock ) => ( props ) => {
+		const duotoneSupport = getBlockSupport( props.name, 'filter.duotone' );
+		if ( duotoneSupport ) {
+			return (
+				<BlockListBlock { ...props } />
+			);
+		}
+
 		const deprecatedExperimentalDuotoneSupport = getBlockSupport(
 			props.name,
 			'color.__experimentalDuotone'
