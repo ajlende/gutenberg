@@ -487,6 +487,46 @@ function gutenberg_render_deprecated_experimental_duotone_support( $block_conten
 	);
 }
 
+function gutenberg_render_duotone_property_support( $block_content, $block ) {
+	$colors          = $block['attrs']['style']['color']['duotone'];
+	$filter_key      = is_array( $colors ) ? implode( '-', $colors ) : $colors;
+	$filter_preset   = array(
+		'slug'   => wp_unique_id( sanitize_key( $filter_key . '-' ) ),
+		'colors' => $colors,
+	);
+
+	if ( is_array( $colors ) ) {
+		add_action(
+			'wp_footer',
+			static function () use ( $filter_preset ) {
+				$filter_svg = gutenberg_get_duotone_filter_svg( $filter_preset );
+				echo $filter_svg;
+			}
+		);
+	}
+
+	$filter_property = gutenberg_get_duotone_filter_property( $filter_preset );
+
+	$preg_style = '/' . preg_quote( 'style="', '/' ) . '/';
+	if ( preg_match( $preg_style, $block_content ) ) {
+		return preg_replace(
+			$preg_style,
+			'style="--wp--style--filter: ' . $filter_property . '; ',
+			$block_content,
+			1
+		);
+	}
+
+	// Sometimes we don't have a style attribute already.
+	$preg_class = '/' . preg_quote( 'class="', '/' ) . '/';
+	return preg_replace(
+		$preg_class,
+		'style="--wp--style--filter: ' . $filter_property . ';" class="',
+		$block_content,
+		1
+	);
+}
+
 /**
  * Render out the duotone stylesheet and SVG.
  *
@@ -503,7 +543,7 @@ function gutenberg_render_duotone_support( $block_content, $block ) {
 	) {
 		$duotone_support = _wp_array_get( $block_type->supports, array( 'filter', 'duotone' ), false );
 		if ( $duotone_support ) {
-			return $block_content;
+			return gutenberg_render_duotone_property_support( $block_content, $block );
 		}
 		$deprecated_experimental_duotone_support = _wp_array_get( $block_type->supports, array( 'color', '__experimentalDuotone' ), false );
 		if ( $deprecated_experimental_duotone_support) {
