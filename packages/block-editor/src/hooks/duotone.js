@@ -183,16 +183,33 @@ const withDuotoneControls = createHigherOrderComponent(
 	'withDuotoneControls'
 );
 
-function DuotoneStyles( { BlockListBlock, ...props } ) {
-	const colors = props?.attributes?.style?.color?.duotone;
-	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
-	const wrapperProps = {
-		...props.wrapperProps,
+function setInlineFilter( wrapperProps, value ) {
+	return {
+		...wrapperProps,
 		style: {
-			'--wp--style--filter': `url( #${ id } )`,
-			...props.wrapperProps?.style,
+			'--wp--style--filter': value,
+			...wrapperProps?.style,
 		},
 	};
+}
+
+function DuotoneStyles( { BlockListBlock, ...props } ) {
+	const colors = props?.attributes?.style?.color?.duotone;
+
+	if ( ! colors ) {
+		return <BlockListBlock { ...props } />;
+	}
+
+	if ( 'unset' === colors ) {
+		const wrapperProps = setInlineFilter( props.wrapperProps, 'unset' );
+		return <BlockListBlock { ...props } wrapperProps={ wrapperProps } />;
+	}
+
+	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
+	const wrapperProps = setInlineFilter(
+		props.wrapperProps,
+		`url( #${ id } )`
+	);
 	const element = useContext( BlockList.__unstableElementContext );
 	return (
 		<>
