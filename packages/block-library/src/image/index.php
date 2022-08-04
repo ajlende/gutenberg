@@ -31,9 +31,8 @@ function render_block_core_image( $attributes, $content ) {
 	 * Filter out styles on the wrapper to add back with wrapper_attributes.
 	 */
 	$preg_style_pattern = '/style="([^"]*)"/';
-	$style_matches      = array();
 	preg_match(
-		'/<figure[^>]+' . substr( $preg_style_pattern, 1, -1 ) . '[^>]*>/',
+		'/^<figure[^>]+?' . substr( $preg_style_pattern, 1, -1 ) . '[^>]*>/',
 		$content,
 		$style_matches
 	);
@@ -48,7 +47,6 @@ function render_block_core_image( $attributes, $content ) {
 	}
 
 	$preg_class_pattern = '/class="([^"]*)"/';
-	$class_matches      = array();
 	preg_match(
 		/*
 		 * The figure should always have the `wp-block-image` class which
