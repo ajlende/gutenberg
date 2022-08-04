@@ -14,54 +14,52 @@
  * @return string Returns the cover block markup, if useFeaturedImage is true.
  */
 function render_block_core_cover( $attributes, $content ) {
-	if ( 'image' !== $attributes['backgroundType'] || false === $attributes['useFeaturedImage'] ) {
-		return $content;
-	}
+	if ( 'image' === $attributes['backgroundType'] && false !== $attributes['useFeaturedImage'] ) {
+		if ( ! ( $attributes['hasParallax'] || $attributes['isRepeated'] ) ) {
+			$attr = array(
+				'class'           => 'wp-block-cover__image-background',
+				'data-object-fit' => 'cover',
+			);
 
-	if ( ! ( $attributes['hasParallax'] || $attributes['isRepeated'] ) ) {
-		$attr = array(
-			'class'           => 'wp-block-cover__image-background',
-			'data-object-fit' => 'cover',
-		);
+			if ( isset( $attributes['focalPoint'] ) ) {
+				$object_position              = round( $attributes['focalPoint']['x'] * 100 ) . '%' . ' ' . round( $attributes['focalPoint']['y'] * 100 ) . '%';
+				$attr['data-object-position'] = $object_position;
+				$attr['style']                = 'object-position: ' . $object_position;
+			}
 
-		if ( isset( $attributes['focalPoint'] ) ) {
-			$object_position              = round( $attributes['focalPoint']['x'] * 100 ) . '%' . ' ' . round( $attributes['focalPoint']['y'] * 100 ) . '%';
-			$attr['data-object-position'] = $object_position;
-			$attr['style']                = 'object-position: ' . $object_position;
+			$image = get_the_post_thumbnail( null, 'post-thumbnail', $attr );
+
+			/*
+			 * Inserts the featured image between the (1st) cover 'background' `span` and 'inner_container' `div`,
+			 * and removes eventual withespace characters between the two (typically introduced at template level)
+			 */
+			$inner_container_start = '/<div\b[^>]+wp-block-cover__inner-container[\s|"][^>]*>/U';
+			if ( 1 === preg_match( $inner_container_start, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+				$offset  = $matches[0][1];
+				$content = substr( $content, 0, $offset ) . $image . substr( $content, $offset );
+			}
+		} else {
+			if ( in_the_loop() ) {
+				update_post_thumbnail_cache();
+			}
+			$current_featured_image = get_the_post_thumbnail_url();
+
+			$styles = 'background-image:url(' . esc_url( $current_featured_image ) . '); ';
+
+			if ( isset( $attributes['minHeight'] ) ) {
+				$height_unit = empty( $attributes['minHeightUnit'] ) ? 'px' : $attributes['minHeightUnit'];
+				$height      = " min-height:{$attributes['minHeight']}{$height_unit}";
+
+				$styles .= $height;
+			}
+
+			$content = preg_replace(
+				'/class=\".*?\"/',
+				'${0} style="' . $styles . '"',
+				$content,
+				1
+			);
 		}
-
-		$image = get_the_post_thumbnail( null, 'post-thumbnail', $attr );
-
-		/*
-		 * Inserts the featured image between the (1st) cover 'background' `span` and 'inner_container' `div`,
-		 * and removes eventual withespace characters between the two (typically introduced at template level)
-		 */
-		$inner_container_start = '/<div\b[^>]+wp-block-cover__inner-container[\s|"][^>]*>/U';
-		if ( 1 === preg_match( $inner_container_start, $content, $matches, PREG_OFFSET_CAPTURE ) ) {
-			$offset  = $matches[0][1];
-			$content = substr( $content, 0, $offset ) . $image . substr( $content, $offset );
-		}
-	} else {
-		if ( in_the_loop() ) {
-			update_post_thumbnail_cache();
-		}
-		$current_featured_image = get_the_post_thumbnail_url();
-
-		$styles = 'background-image:url(' . esc_url( $current_featured_image ) . '); ';
-
-		if ( isset( $attributes['minHeight'] ) ) {
-			$height_unit = empty( $attributes['minHeightUnit'] ) ? 'px' : $attributes['minHeightUnit'];
-			$height      = " min-height:{$attributes['minHeight']}{$height_unit}";
-
-			$styles .= $height;
-		}
-
-		$content = preg_replace(
-			'/class=\".*?\"/',
-			'${0} style="' . $styles . '"',
-			$content,
-			1
-		);
 	}
 
 	return $content;
