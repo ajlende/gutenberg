@@ -14,6 +14,8 @@
  * @return string Returns the cover block markup, if useFeaturedImage is true.
  */
 function render_block_core_cover( $attributes, $content ) {
+	$wrapper_attrs = array();
+
 	if ( 'image' === $attributes['backgroundType'] && false !== $attributes['useFeaturedImage'] ) {
 		if ( ! ( $attributes['hasParallax'] || $attributes['isRepeated'] ) ) {
 			$attr = array(
@@ -53,14 +55,30 @@ function render_block_core_cover( $attributes, $content ) {
 				$styles .= $height;
 			}
 
-			$content = preg_replace(
-				'/class=\".*?\"/',
-				'${0} style="' . $styles . '"',
-				$content,
-				1
-			);
+			$wrapper_attrs['style'] = $styles;
 		}
 	}
+
+	$preg_class_pattern = '/class="([^"]*)"/';
+	preg_match(
+		$preg_class_pattern,
+		$content,
+		$class_matches
+	);
+	if ( isset( $class_matches[1] ) ) {
+		$classes = explode( ' ', $class_matches[1] );
+		$classes = array_diff( $classes, array( 'wp-block-cover' ) ) ;
+		$classes = implode( ' ', $classes );
+		$wrapper_attrs['class'] = $classes;
+	}
+	$wrapper_attributes = get_block_wrapper_attributes( $wrapper_attrs );
+
+	$content = preg_replace(
+		$preg_class_pattern,
+		$wrapper_attributes,
+		$content,
+		1
+	);
 
 	return $content;
 }
