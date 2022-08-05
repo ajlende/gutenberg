@@ -547,19 +547,15 @@ function gutenberg_render_block_wrapper_attributes( $block_content, $new_attribu
 
 		$attribute_pattern = '/'. preg_quote( $attribute_name, '/' ) . '="([^"]*)"/';
 		$wrapper_pattern   = '/<[^>]+?' . substr( $attribute_pattern, 1, -1 ) . '[^>]*>/';
-		$match_result      = preg_match(
+		preg_match(
 			$wrapper_pattern,
 			$block_content,
 			$matches
 		);
 
 		if ( isset( $matches[1] ) ) {
-			$extra_attribute = $matches[1];
-		}
-
-		if ( 1 === $match_result ) {
 			// Replace the attribute.
-			$value         = $new_attributes[ $attribute_name ] . ' ' . $extra_attribute;
+			$value         = $new_attributes[ $attribute_name ] . ' ' . $matches[1];
 			$block_content = preg_replace(
 				$attribute_pattern,
 				sprintf( '%s="%s"', $attribute_name, esc_attr( $value ) ),
