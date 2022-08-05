@@ -535,6 +535,7 @@ function gutenberg_apply_duotone_support( $block_type, $block_attributes ) {
 
 // TODO: This may be able to be used for applying block supports to static blocks automatically.
 // TODO: Use HTML Walker instead of regular expressions.
+// TODO: Function inline docs mentioning class-wp-block-supports.php get_block_wrapper_attributes and apply_block_supports.
 function gutenberg_render_block_wrapper_attributes( $block_content, $new_attributes = array() ) {
 	// This is hardcoded on purpose.
 	// We only support a fixed list of attributes.
