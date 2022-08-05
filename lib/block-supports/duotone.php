@@ -435,6 +435,14 @@ function gutenberg_render_duotone_support( $block_content, $block ) {
 
 	$duotone_support = false;
 	if ( $block_type && property_exists( $block_type, 'supports' ) ) {
+		/*
+		 * Stabilized `filter.duotone` support is handled by
+		 * WP_Block_Supports instead of the render_block filter.
+		 */
+		if ( _wp_array_get( $block_type->supports, array( 'filter', 'duotone' ), false ) ) {
+			return $block_content;
+		}
+
 		$duotone_support = _wp_array_get( $block_type->supports, array( 'color', '__experimentalDuotone' ), false );
 	}
 
