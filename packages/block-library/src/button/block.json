@@ -58,6 +58,9 @@
 		"anchor": true,
 		"align": true,
 		"alignWide": false,
+		"filter": {
+			"duotone": true
+		},
 		"color": {
 			"__experimentalSkipSerialization": true,
 			"gradients": true,

@@ -20,6 +20,12 @@ export const __EXPERIMENTAL_STYLE_PROPERTY = {
 		value: [ 'color', 'link' ],
 		support: [ 'color', 'link' ],
 	},
+	'--wp--style--filter': {
+		// We can't make plugin filters if we have to update some constant in gutenberg...
+		value: [ 'color', 'duotone' ],
+		support: [ 'filter', 'duotone' ],
+		placeholder: 'var(--wp--duotone--placeholder)',
+	},
 	background: {
 		value: [ 'color', 'gradient' ],
 		support: [ 'color', 'gradients' ],

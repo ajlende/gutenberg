@@ -6,6 +6,17 @@
  */
 
 /**
+ * Function that enqueues the CSS Custom Properties coming from theme.json.
+ *
+ * @since 5.9.0
+ */
+function gutenberg_enqueue_global_styles_css_custom_properties() {
+	wp_register_style( 'global-styles-css-custom-properties', false, array(), true, true );
+	wp_add_inline_style( 'global-styles-css-custom-properties', gutenberg_get_global_stylesheet( array( 'variables' ) ) );
+	wp_enqueue_style( 'global-styles-css-custom-properties' );
+}
+
+/**
  * This function takes care of adding inline styles
  * in the proper place, depending on the theme in use.
  *
@@ -159,12 +170,14 @@ function gutenberg_enqueue_global_styles() {
 	wp_add_global_styles_for_blocks();
 }
 
+remove_action( 'enqueue_block_editor_assets', 'wp_enqueue_global_styles_css_custom_properties' );
 remove_action( 'wp_enqueue_scripts', 'wp_enqueue_global_styles' );
 remove_action( 'wp_footer', 'wp_enqueue_global_styles', 1 );
 remove_action( 'wp_enqueue_scripts', 'gutenberg_enqueue_global_styles_assets' );
 remove_action( 'wp_footer', 'gutenberg_enqueue_global_styles_assets' );
 
 // Enqueue global styles, and then block supports styles.
+add_action( 'enqueue_block_editor_assets', 'gutenberg_enqueue_global_styles_css_custom_properties' );
 add_action( 'wp_enqueue_scripts', 'gutenberg_enqueue_global_styles' );
 add_action( 'wp_footer', 'gutenberg_enqueue_global_styles', 1 );
 add_action( 'wp_enqueue_scripts', 'gutenberg_enqueue_stored_styles' );

@@ -367,3 +367,8 @@
 		background-position: 200px 0;
 	}
 }
+
+.wp-block-button {
+	--wp--style--filter: initial;
+	filter: var(--wp--style--filter);
+}

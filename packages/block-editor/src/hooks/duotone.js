@@ -4,6 +4,7 @@
 import classnames from 'classnames';
 import { extend } from 'colord';
 import namesPlugin from 'colord/plugins/names';
+import { find } from 'lodash';
 
 /**
  * WordPress dependencies
@@ -57,7 +58,7 @@ function InlineDuotone( { selector, id, colors } ) {
 }
 
 function useMultiOriginPresets( { presetSetting, defaultSetting } ) {
-	const disableDefault = ! useSetting( defaultSetting );
+	const disableDefault = defaultSetting && ! useSetting( defaultSetting );
 	const userPresets =
 		useSetting( `${ presetSetting }.custom` ) || EMPTY_ARRAY;
 	const themePresets =
@@ -193,18 +194,36 @@ function setInlineFilter( wrapperProps, value ) {
 	};
 }
 
-function DuotoneStyles( { BlockListBlock, ...props } ) {
-	const colors = props?.attributes?.style?.color?.duotone;
+function getDuotoneColorsByAttributeValue( palette, attribute ) {
+	// TODO: 'unset' is also a string
+	if ( typeof attribute === 'string' ) {
+		const attributeParsed = /var:preset\|duotone\|(.+)/.exec( attribute );
+		if ( attributeParsed?.[ 1 ] ) {
+			return find( palette, { slug: attributeParsed[ 1 ] } );
+		}
+	}
+	return attribute;
+}
 
-	if ( ! colors ) {
+function DuotoneStyles( { BlockListBlock, ...props } ) {
+	const duotoneAttribute = props?.attributes?.style?.color?.duotone;
+
+	if ( ! duotoneAttribute ) {
 		return <BlockListBlock { ...props } />;
 	}
 
-	if ( 'unset' === colors ) {
+	if ( 'unset' === duotoneAttribute ) {
 		const wrapperProps = setInlineFilter( props.wrapperProps, 'unset' );
 		return <BlockListBlock { ...props } wrapperProps={ wrapperProps } />;
 	}
 
+	const duotonePalette = useMultiOriginPresets( {
+		presetSetting: 'color.duotone',
+	} );
+	const colors = getDuotoneColorsByAttributeValue(
+		duotonePalette,
+		duotoneAttribute
+	);
 	const id = `wp-duotone-${ useInstanceId( BlockListBlock ) }`;
 	const wrapperProps = setInlineFilter(
 		props.wrapperProps,
@@ -221,6 +240,31 @@ function DuotoneStyles( { BlockListBlock, ...props } ) {
 			<BlockListBlock { ...props } wrapperProps={ wrapperProps } />
 		</>
 	);
+}
+
+// TODO: Copied from color support. Is there a better way to do this?
+function addEditProps( settings ) {
+	const duotoneSupport = getBlockSupport( settings, 'filter.duotone' );
+	if ( ! duotoneSupport ) {
+		return settings;
+	}
+
+	const existingGetEditWrapperProps = settings.getEditWrapperProps;
+	settings.getEditWrapperProps = ( attributes ) => {
+		let props = {};
+		if ( existingGetEditWrapperProps ) {
+			props = existingGetEditWrapperProps( attributes );
+		}
+		return addSaveProps( props, settings, attributes );
+	};
+
+	return settings;
+}
+
+function addSaveProps( props, blockType, attributes ) {
+	const duotoneSupport = getBlockSupport( settings, 'filter.duotone' );
+
+	return props;
 }
 
 /**
@@ -339,6 +383,16 @@ addFilter(
 	'core/editor/duotone/add-attributes',
 	addDuotoneAttributes
 );
+// addFilter(
+// 	'blocks.registerBlockType',
+// 	'core/editor/duotone/addEditProps',
+// 	addEditProps
+// );
+// addFilter(
+// 	'blocks.getSaveContent.extraProps',
+// 	'core/editor/duotone/addSaveProps',
+// 	addSaveProps
+// );
 addFilter(
 	'editor.BlockEdit',
 	'core/editor/duotone/with-editor-controls',

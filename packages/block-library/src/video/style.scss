@@ -22,3 +22,11 @@
 		@include caption-style();
 	}
 }
+
+// Duotone Styles
+.wp-block-video {
+	--wp--style--filter: initial;
+	video {
+		filter: var(--wp--style--filter);
+	}
+}

@@ -134,6 +134,15 @@ class WP_Style_Engine {
 				),
 			),
 		),
+		'filter'     => array(
+			'duotone' => array(
+				'value_func' => 'static::get_individual_property_css_declarations',
+				'path'       => array( 'color', 'duotone' ),
+				'css_vars'   => array(
+					'duotone' => '--wp--preset--duotone--$slug',
+				)
+			)
+		),
 		'spacing'    => array(
 			'padding' => array(
 				'property_keys' => array(

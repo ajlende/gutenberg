@@ -77,6 +77,9 @@
 	"supports": {
 		"anchor": true,
 		"align": true,
+		"filter": {
+			"duotone": true
+		},
 		"spacing": {
 			"margin": true,
 			"padding": true

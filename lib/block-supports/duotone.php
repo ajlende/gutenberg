@@ -488,93 +488,51 @@ function gutenberg_render_deprecated_experimental_duotone_support( $block_conten
 }
 
 function gutenberg_apply_duotone_support( $block_type, $block_attributes ) {
-	$attributes      = array();
 	$duotone_support = _wp_array_get( $block_type->supports, array( 'filter', 'duotone' ), false );
 	$colors          = _wp_array_get( $block_attributes, array( 'style', 'color', 'duotone' ), null );
-	if ( $duotone_support && $colors ) {
-		$filter_key          = is_array( $colors ) ? implode( '-', $colors ) : $colors;
-		$filter_preset       = array(
-			'slug'   => wp_unique_id( sanitize_key( $filter_key . '-' ) ),
-			'colors' => $colors,
-		);
-		$filter_property     = gutenberg_get_duotone_filter_property( $filter_preset );
-		$filter_id           = gutenberg_get_duotone_filter_id( $filter_preset );
-		$attributes['style'] = sprintf( '--wp--style--filter: %s;', $filter_property );
-		$attributes['class'] = $filter_id; // Required for Safari block re-render.
+	if ( ! $duotone_support || ! $colors ) {
+		return array();
+	}
 
-		if ( is_array( $colors ) ) {
-			add_action(
-				'wp_footer',
-				static function () use ( $filter_preset, $filter_id ) {
-					$filter_svg = gutenberg_get_duotone_filter_svg( $filter_preset );
-					echo $filter_svg;
+	$filter_key          = is_array( $colors ) ? implode( '-', $colors ) : $colors;
+	$filter_preset       = array(
+		'slug'   => wp_unique_id( sanitize_key( $filter_key . '-' ) ),
+		'colors' => $colors,
+	);
+	$filter_property     = gutenberg_get_duotone_filter_property( $filter_preset );
+	$filter_id           = gutenberg_get_duotone_filter_id( $filter_preset );
 
+	// Custom duotone filters are stored as an array.
+	if ( is_array( $colors ) ) {
+		add_action(
+			'wp_footer',
+			static function () use ( $filter_preset, $filter_id ) {
+				$filter_svg = gutenberg_get_duotone_filter_svg( $filter_preset );
+				echo $filter_svg;
+
+				/*
+				 * Safari renders elements incorrectly on first paint when the
+				 * SVG filter comes after the content that it is filtering, so
+				 * we force a repaint with a WebKit hack which solves the issue.
+				 */
+				global $is_safari;
+				if ( $is_safari ) {
 					/*
-					 * Safari renders elements incorrectly on first paint when the
-					 * SVG filter comes after the content that it is filtering, so
-					 * we force a repaint with a WebKit hack which solves the issue.
+					 * Simply accessing el.offsetHeight flushes layout and style
+					 * changes in WebKit without having to wait for setTimeout.
 					 */
-					global $is_safari;
-					if ( $is_safari ) {
-						/*
-						 * Simply accessing el.offsetHeight flushes layout and style
-						 * changes in WebKit without having to wait for setTimeout.
-						 */
-						printf(
-							'<script>( function() { var el = document.getElementsByClassName( %s )[0]; var display = el.style.display; el.style.display = "none"; el.offsetHeight; el.style.display = display; } )();</script>',
-							wp_json_encode( $filter_id )
-						);
-					}
+					printf(
+						'<script>( function() { var el = document.getElementsByClassName( %s )[0]; var display = el.style.display; el.style.display = "none"; el.offsetHeight; el.style.display = display; } )();</script>',
+						wp_json_encode( $filter_id )
+					);
 				}
-			);
-		}
-	}
-
-	return $attributes;
-}
-
-// TODO: This may be able to be used for applying block supports to static blocks automatically.
-// TODO: Use HTML Walker instead of regular expressions.
-// TODO: Function inline docs mentioning class-wp-block-supports.php get_block_wrapper_attributes and apply_block_supports.
-function gutenberg_render_block_wrapper_attributes( $block_content, $new_attributes = array() ) {
-	// This is hardcoded on purpose.
-	// We only support a fixed list of attributes.
-	$attributes_to_render = array( 'style', 'class' );
-	foreach ( $attributes_to_render as $attribute_name ) {
-		if ( empty( $new_attributes[ $attribute_name ] ) ) {
-			continue;
-		}
-
-		$attribute_pattern = '/'. preg_quote( $attribute_name, '/' ) . '="([^"]*)"/';
-		$wrapper_pattern   = '/<[^>]+?' . substr( $attribute_pattern, 1, -1 ) . '[^>]*>/';
-		preg_match(
-			$wrapper_pattern,
-			$block_content,
-			$matches
+			}
 		);
-
-		if ( isset( $matches[1] ) ) {
-			// Replace the attribute.
-			$value         = $new_attributes[ $attribute_name ] . ' ' . $matches[1];
-			$block_content = preg_replace(
-				$attribute_pattern,
-				sprintf( '%s="%s"', $attribute_name, esc_attr( $value ) ),
-				$block_content,
-				1
-			);
-		} else {
-			// No matching attribute was found or there was an error, so add a new attribute.
-			$value         = $new_attributes[ $attribute_name ];
-			$block_content = preg_replace(
-				'/(\s*\/?>)/',
-				sprintf( ' %s="%s"${0}', $attribute_name, esc_attr( $value ) ),
-				$block_content,
-				1
-			);
-		}
 	}
-
-	return $block_content;
+	return array(
+		'style' => sprintf( '--wp--style--filter: %s;', $filter_property ),
+		'class' => $filter_id, // Required for Safari block re-render.
+	);
 }
 
 /**
@@ -591,10 +549,13 @@ function gutenberg_render_duotone_support( $block_content, $block ) {
 	}
 
 	$duotone_support = _wp_array_get( $block_type->supports, array( 'filter', 'duotone' ), false );
-	if ( $duotone_support && isset( $block['attrs']['style']['color']['duotone'] ) ) {
-		$new_attributes = gutenberg_apply_duotone_support( $block_type, $block['attrs'] );
-		return gutenberg_render_block_wrapper_attributes( $block_content, $new_attributes );
+	if ( $duotone_support ) {
+		return $block_content;
 	}
+	// if ( $duotone_support && isset( $block['attrs']['style']['color']['duotone'] ) ) {
+	// 	$new_attributes = gutenberg_apply_duotone_support( $block_type, $block['attrs'] );
+	// 	return gutenberg_render_block_wrapper_attributes( $block_content, $new_attributes );
+	// }
 
 	$deprecated_experimental_duotone_support = _wp_array_get( $block_type->supports, array( 'color', '__experimentalDuotone' ), false );
 	if ( $deprecated_experimental_duotone_support && isset( $block['attrs']['style']['color']['duotone'] ) ) {
@@ -613,9 +574,11 @@ WP_Block_Supports::get_instance()->register(
 		 * If static blocks were supported, we could do this instead of
 		 * the render_block filter for the new filter.duotone support.
 		 */
-		// 'apply'              => 'gutenberg_apply_duotone_support',
+		'apply'              => 'gutenberg_apply_duotone_support',
 	)
 );
+
+// printf('<pre><code>%s</code></pre>',htmlspecialchars(print_r($matches,true)));
 
 // Remove WordPress core filter to avoid rendering duplicate support elements.
 remove_filter( 'render_block', 'wp_render_duotone_support', 10, 2 );

@@ -26,7 +26,11 @@ export default function save( { attributes } ) {
 		tracks,
 	} = attributes;
 	return (
-		<figure { ...useBlockProps.save() }>
+		<figure
+			{ ...useBlockProps.save( {
+				style: { '--wp--test--property': 'debug' },
+			} ) }
+		>
 			{ src && (
 				<video
 					autoPlay={ autoplay }
